@@ -39,3 +39,13 @@ class JejuTourismImage(Base):
 
     class Config:
         orm_mode = True
+
+class JejuTourismHashtag(Base):
+    __tablename__ = "jeju_tourism_hashtags"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    hashtag_name = Column(String)
+
+    class Config:
+        orm_mode = True

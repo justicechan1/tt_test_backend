@@ -43,7 +43,7 @@ class JejuCafeImage(Base):
 class JejuCafeHashtag(Base):
     __tablename__ = "jeju_cafe_hashtags"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    place_name = Column(String, index=True)
+    name = Column(String)
     hashtag_name = Column(String)
 
     class Config:

@@ -1,63 +1,67 @@
-# from pydantic import BaseModel
-# from typing import List, Dict, Optional
+from pydantic import BaseModel
+from typing import List, Dict, Optional
 
-# # ------------------- 공통 -------------------
+# ------------------- 공통 -------------------
 
-# class TagInfo(BaseModel):
-#     hashtag_name: str
+class TagInfo(BaseModel):
+    hashtag_name: str
 
-# class MoveInfo(BaseModel):
-#     name: str
-#     x_cord: float
-#     y_cord: float
+class MoveInfo(BaseModel):
+    name: str
+    x_cord: float
+    y_cord: float
 
-# class PathInfo(BaseModel):
-#     # 실제 경로 정보가 확정되면 구조 정의
-#     pass
+class Viewport(BaseModel):
+    min_x: float
+    min_y: float
+    max_x: float
+    max_y: float
 
-# # ------------------- 경로 최적화 -------------------
+class PathInfo(BaseModel):
+    # 실제 경로 정보가 확정되면 구조 정의
+    pass
 
-# class RoutePlaceInput(BaseModel):
-#     name: str
+# ------------------- 경로 최적화 -------------------
 
-# class RouteInput(BaseModel):
-#     user_id: str
-#     places_by_day: Dict[str, List[RoutePlaceInput]]
+class RoutePlaceInput(BaseModel):
+    name: str
 
-# class PlaceInfo(BaseModel):
-#     id: int
-#     name: str
-#     x_cord: float
-#     y_cord: float
-#     category: str
-#     open_time: str
-#     close_time: str
-#     service_time: int
-#     tags: List[str]
-#     closed_days: List[str]
-#     break_time: List[str]
-#     is_mandatory: bool
+class RouteInput(BaseModel):
+    user_id: str
+    places_by_day: Dict[str, List[RoutePlaceInput]]
 
-# class RouteOutput(BaseModel):
-#     places_by_day: Dict[str, List[PlaceInfo]]
-#     path: List[PathInfo]
+class PlaceInfo(BaseModel):
+    id: int
+    name: str
+    x_cord: float
+    y_cord: float
+    category: str
+    open_time: str
+    close_time: str
+    service_time: int
+    tags: List[str]
+    closed_days: List[str]
+    break_time: List[str]
+    is_mandatory: bool
 
-# # ------------------- 해시태그 -------------------
+class RouteOutput(BaseModel):
+    places_by_day: Dict[str, List[PlaceInfo]]
+    path: List[PathInfo]
 
-# class HashtagInput(BaseModel):
-#     category: str
-#     user_x_cord: float
-#     user_y_cord: float
+# ------------------- 해시태그 -------------------
 
-# class HashtagOutput(BaseModel):
-#     tag: List[TagInfo]
+class HashtagInput(BaseModel):
+    category: str
+    viewport: Viewport
 
-# # ------------------- 지도 새로고침 -------------------
+class HashtagOutput(BaseModel):
+    tag: List[TagInfo]
 
-# class MoveInput(BaseModel):
-#     tag: List[TagInfo]
-#     user_x_cord: float
-#     user_y_cord: float
+# ------------------- 지도 새로고침 -------------------
 
-# class MoveOutput(BaseModel):
-#     move: List[MoveInfo]
+class MoveInput(BaseModel):
+    tag: List[TagInfo]
+    viewport: Viewport
+
+class MoveOutput(BaseModel):
+    move: List[MoveInfo]

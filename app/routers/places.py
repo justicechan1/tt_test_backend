@@ -36,7 +36,7 @@ def fetch_image_urls(db: Session, image_model, name: str) -> list[str]:
 def search_places(name: str = Query(..., min_length=1), db: Session = Depends(get_db)):
     search_term = f"%{name.strip()}%"
     results = []
-    for model_type, model in PLACE_MODELS:
+    for model_type, (model, _) in PLACE_MODELS.items():
         try:
             matches = db.query(model).filter(model.name.like(search_term)).all()
             for match in matches:
