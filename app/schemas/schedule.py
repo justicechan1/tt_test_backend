@@ -44,13 +44,13 @@ class PlaceDetailOutput(BaseModel):
     x_cord: float
     y_cord: float
     category: str
-    open_time: str
-    close_time: str
-    service_time: int
-    tags: List[str]
-    closed_days: List[str]
-    break_time: List[str]
-    is_mandatory: bool
+    open_time: Optional[str] = ""
+    close_time: Optional[str] = ""
+    service_time: Optional[int] = 0
+    tags: List[str] = []
+    closed_days: List[str] = []
+    break_time: List[str] = []
+    is_mandatory: Optional[bool] = False
 
 class ScheduleInitOutput(BaseModel):
     date: DateInfo

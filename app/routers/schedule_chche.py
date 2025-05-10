@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.database import get_db
+from datetime import datetime
 from app.models.jeju_cafe import jeju_Cafe, JejuCafeImage
 from app.models.jeju_restaurant import jeju_restaurant, JejuRestaurantImage
 from app.models.jeju_tourism import jeju_tourism, JejuTourismImage
@@ -46,37 +47,43 @@ def init_schedule(input_data: ScheduleInitInput, db: Session = Depends(get_db)):
         "start_end": input_data.start_end,
         "places_by_day": {}
     }
+    enriched_places_by_day = {}
 
     for date, places in input_data.places_by_day.items():
-        user_schedules[user_id]["places_by_day"][date] = []
+        enriched_places = []
 
         for place in places:
-            found = False
-
-            for _, (PlaceModel, _) in PLACE_MODELS.items():
+            for category, (PlaceModel, _) in PLACE_MODELS.items():
                 db_place = db.query(PlaceModel).filter(
                     func.trim(func.lower(PlaceModel.name)) == func.trim(func.lower(place.name))
                 ).first()
+
                 if db_place:
-                    found = True
+                    enriched_places.append(PlaceDetailOutput(
+                        id=db_place.id,
+                        name=db_place.name,
+                        x_cord=db_place.x_cord,
+                        y_cord=db_place.y_cord,
+                        category=category,
+                        open_time=db_place.open_time,
+                        close_time=db_place.close_time,
+                        service_time=db_place.service_time or 0,  # ❗ None 방지
+                        tags=getattr(db_place, "tags", []) or [],
+                        closed_days=getattr(db_place, "closed_days", []) or [],
+                        break_time=getattr(db_place, "break_time", []) or [],
+                        is_mandatory=getattr(db_place, "is_mandatory", False) or False
+                    ))
                     break
 
-            if not found:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f'"{place.name}"은(는) 존재하지 않는 장소입니다.'
-                )
+        enriched_places_by_day[date] = enriched_places
 
-            user_schedules[user_id]["places_by_day"][date].append(
-                {"name": place.name}  
-            )
-
+    user_schedules[user_id]["places_by_day"] = enriched_places_by_day
+    
     return ScheduleInitOutput(
         date=input_data.date,
         start_end=input_data.start_end,
-        places_by_day=user_schedules[user_id]["places_by_day"]
+        places_by_day=enriched_places_by_day
     )
-
 
 # ---------------------- /init_show ----------------------
 
@@ -90,7 +97,14 @@ def show_schedule(user_id: str = Query(..., min_length=1), db: Session = Depends
     start_end_info = schedule_data["start_end"]
     places_by_day = {}
 
-    for date, places in schedule_data["places_by_day"].items():
+    # ✅ 기준일로 start_date 파싱
+    start_date = datetime.strptime(date_info.start_date, "%Y-%m-%d")
+
+    for date_str, places in schedule_data["places_by_day"].items():
+        current_date = datetime.strptime(date_str, "%Y-%m-%d")
+        day_index = (current_date - start_date).days + 1
+        day_key = f"Day {day_index}"  # "Day 1", "Day 2", ...
+
         day_places = []
 
         for place in places:
@@ -120,7 +134,7 @@ def show_schedule(user_id: str = Query(..., min_length=1), db: Session = Depends
                     )
                     break
 
-        places_by_day[date] = day_places
+        places_by_day[day_key] = day_places 
 
     return ScheduleShowOutput(
         date=date_info,
